@@ -315,36 +315,25 @@ Pada bagian ini, saya menjelaskan metrik evaluasi yang digunakan untuk mengevalu
 
 ### Metrik Evaluasi yang Digunakan
 
-1. **Akurasi (Accuracy)**:
+### 1. **Akurasi (Accuracy)**
 
-   - **Akurasi** mengukur seberapa banyak prediksi yang benar dibandingkan dengan total prediksi. Metrik ini sangat berguna untuk mengukur kinerja model secara umum pada masalah klasifikasi.
-   - **Formula**:  
-     \[
-     \text{Akurasi} = \frac{\text{Jumlah prediksi benar}}{\text{Jumlah total prediksi}}
-     \]
+- **Akurasi** mengukur seberapa banyak prediksi yang benar dibandingkan dengan total prediksi yang dilakukan oleh model. Ini memberikan gambaran umum tentang seberapa baik model bekerja pada dataset.
+- Metrik ini mengukur persentase prediksi yang benar terhadap total prediksi yang dilakukan oleh model.
 
-2. **Precision**:
+### 2. **Precision**
 
-   - **Precision** mengukur ketepatan prediksi model dalam mengklasifikasikan kelas positif. Precision yang tinggi menunjukkan bahwa sebagian besar prediksi positif model benar.
-   - **Formula**:  
-     \[
-     \text{Precision} = \frac{\text{True Positives}}{\text{True Positives + False Positives}}
-     \]
+- **Precision** mengukur ketepatan prediksi model dalam mengklasifikasikan data sebagai kelas positif (misalnya, kualitas udara "Sangat Tidak Sehat").
+- Precision yang tinggi menunjukkan bahwa sebagian besar prediksi yang diberikan oleh model sebagai kelas positif memang benar-benar kelas positif.
 
-3. **Recall**:
+### 3. **Recall**
 
-   - **Recall** mengukur kemampuan model dalam mendeteksi semua contoh kelas positif dalam dataset. Recall yang tinggi berarti model berhasil mengidentifikasi sebagian besar contoh positif.
-   - **Formula**:  
-     \[
-     \text{Recall} = \frac{\text{True Positives}}{\text{True Positives + False Negatives}}
-     \]
+- **Recall** mengukur kemampuan model dalam menemukan semua data yang relevan untuk kelas positif. Metrik ini menunjukkan seberapa baik model dalam mengidentifikasi seluruh contoh yang seharusnya berada dalam kelas tersebut.
+- Recall yang tinggi berarti model berhasil menemukan sebagian besar contoh positif, namun tidak selalu tanpa menghasilkan prediksi positif yang salah.
 
-4. **F1-Score**:
-   - **F1-Score** adalah **harmonic mean** dari precision dan recall, memberikan gambaran keseimbangan antara keduanya. Metrik ini digunakan ketika Anda ingin menyeimbangkan precision dan recall.
-   - **Formula**:  
-     \[
-     \text{F1-Score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
-     \]
+### 4. **F1-Score**
+
+- **F1-Score** adalah **harmonic mean** antara precision dan recall. Metrik ini digunakan untuk mengukur keseimbangan antara precision dan recall.
+- F1-Score sangat berguna ketika kita ingin menyeimbangkan keduanya, terutama ketika ada ketidakseimbangan antara kelas-kelas dalam data.
 
 ### Hasil Evaluasi Berdasarkan Metrik
 
