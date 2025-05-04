@@ -26,14 +26,13 @@ Dengan demikian, pengembangan sistem rekomendasi buku yang efektif memiliki pote
 
 ### Problem Statements
 
-- Bagaimana sistem dapat merekomendasikan buku yang sesuai dengan minat pengguna berdasarkan histori interaksi sebelumnya (rating, bacaan)?
-- Pendekatan atau algoritma mana yang memberikan hasil rekomendasi paling akurat dan relevan terhadap kebutuhan pengguna, berdasarkan data Goodbooks-10k?
+1. **Bagaimana sistem dapat merekomendasikan buku yang sesuai dengan minat pengguna berdasarkan histori interaksi sebelumnya (rating, bacaan)?**
+2. **Pendekatan atau algoritma mana yang memberikan hasil rekomendasi paling akurat dan relevan terhadap kebutuhan pengguna, berdasarkan data Goodbooks-10k?**
 
 ### Goals
 
-- Mengembangkan sistem rekomendasi buku yang mampu menghasilkan rekomendasi bersifat personal dan relevan.
-- Menyajikan output berupa Top-N rekomendasi buku untuk pengguna tertentu.
-- Mengevaluasi performa sistem dengan berbagai metrik dan membandingkan model berdasarkan pendekatan yang digunakan.
+1. **Mengembangkan sistem rekomendasi buku yang bersifat personal dengan memanfaatkan histori interaksi pengguna untuk menghasilkan rekomendasi yang sesuai dengan minat pengguna.**
+2. **Mengevaluasi dan membandingkan beberapa pendekatan atau algoritma sistem rekomendasi untuk menentukan metode yang paling akurat dan relevan berdasarkan data Goodbooks-10k.**
 
 ### Solution Approach
 
@@ -262,9 +261,41 @@ Langkah-langkah yang dilakukan:
 4. **Menghapus missing values**
    - Setelah proses gabung dan filter, nilai kosong yang tersisa dihapus.
 
+5. **Membangun User-Item Matrix**
+   - Setelah data difilter, dibuat matriks user-item, di mana baris merepresentasikan user dan kolom merepresentasikan buku.
+   - Setiap sel pada matriks berisi rating yang diberikan user terhadap buku tertentu (jika ada, jika tidak maka nilainya kosong atau 0).
+
 ---
 
-### 2. Splitting Data
+### 2. Feature Extraction
+
+#### a. Content-Based Filtering
+
+Pada tahap ini, fitur utama yang digunakan untuk merepresentasikan setiap buku adalah gabungan dari kolom `authors`, `original_title`, dan kumpulan tag teratas. Seluruh informasi tersebut digabung menjadi satu kolom teks (`content`) untuk setiap buku.
+
+Selanjutnya, dilakukan proses ekstraksi fitur teks menggunakan dua teknik utama:
+
+1. **TF-IDF Vectorizer**
+
+- TF-IDF (*Term Frequency-Inverse Document Frequency*) digunakan untuk mengubah teks pada kolom `content` menjadi representasi numerik (vektor).
+- TF-IDF menekankan kata-kata yang unik dan jarang muncul di seluruh dokumen, sehingga fitur yang dihasilkan lebih fokus pada kata-kata yang membedakan satu buku dengan buku lain.
+- Proses:
+  - Tokenisasi dan normalisasi teks.
+  - Penerapan TF-IDF pada seluruh data buku untuk menghasilkan matriks fitur.
+- Matriks hasil TF-IDF ini kemudian digunakan untuk menghitung kemiripan antar buku menggunakan cosine similarity.
+
+2. **CountVectorizer**
+
+- CountVectorizer mengubah teks menjadi vektor berdasarkan jumlah kemunculan setiap kata (bag-of-words).
+- Teknik ini lebih sederhana dibanding TF-IDF, karena setiap kata hanya dihitung frekuensinya tanpa memperhatikan seberapa umum kata tersebut di seluruh dokumen.
+- Proses:
+  - Tokenisasi dan normalisasi teks.
+  - Penerapan CountVectorizer pada kolom `content` untuk menghasilkan matriks fitur berbasis frekuensi kata.
+- Matriks hasil CountVectorizer juga digunakan untuk menghitung kemiripan antar buku dengan cosine similarity.
+
+Kedua teknik ini memungkinkan sistem untuk mengukur kemiripan antar buku berdasarkan konten, sehingga dapat merekomendasikan buku-buku yang memiliki karakteristik serupa dengan buku yang pernah disukai atau dibaca oleh pengguna.
+
+### 3. Splitting Data
 
 #### a. Content-Based Filtering
 
@@ -289,9 +320,9 @@ Tujuan:
 
 ### Alasan Tahapan Data Preparation
 
-- **Data Cleaning** sangat penting untuk memastikan kualitas dan keakuratan data yang masuk ke dalam model.
-- **Filtering** data membantu fokus pada pengguna dan item yang benar-benar aktif dan signifikan.
-- **Splitting data secara logis** (per user) memberikan validasi realistis atas kemampuan sistem rekomendasi dalam memprediksi preferensi pengguna.
+- **Data Cleaning & Filtering** dilakukan secara bersamaan untuk memastikan data yang digunakan bersih dari duplikasi, nilai hilang, serta hanya mencakup pengguna dan item yang aktif dan signifikan. Hal ini meningkatkan kualitas data dan mengurangi noise yang dapat mempengaruhi performa model.
+- **Feature Extraction** diterapkan setelah data dibersihkan, untuk mengubah data mentah menjadi representasi fitur yang dapat diproses oleh model, seperti vektorisasi teks (TF-IDF, CountVectorizer) pada content-based filtering atau pembentukan user-item matrix pada collaborative filtering.
+- **Splitting data secara logis** (per user) dilakukan setelah fitur diekstraksi, agar validasi performa sistem rekomendasi lebih realistis dan mencerminkan kemampuan model dalam memprediksi preferensi pengguna terhadap item yang belum pernah mereka interaksikan.
 
 Dengan menerapkan tahapan-tahapan ini secara sistematis dan berurutan, data menjadi lebih siap, bersih, dan terstruktur dengan baik untuk membangun sistem rekomendasi yang akurat dan efektif.
 
@@ -344,54 +375,54 @@ Pendekatan ini merekomendasikan buku berdasarkan pola interaksi pengguna terhada
 
 #### a. Cosine Similarity
 
-Top-10 rekomendasi untuk user ID 33716:
+Top-10 rekomendasi untuk user ID 314:
 
-| Judul Buku                                             | Penulis                | Avg. Rating |
-|--------------------------------------------------------|-------------------------|-------------|
-| A Short History of Nearly Everything                  | Bill Bryson             | 4.19        |
-| Heidi                                                 | Johanna Spyri et al.    | 3.97        |
-| Notes from a Small Island                             | Bill Bryson             | 3.91        |
-| In a Sunburned Country                                | Bill Bryson             | 4.05        |
-| Neither Here nor There: Travels in Europe             | Bill Bryson             | 3.88        |
-| The Lost Continent: Travels in Small Town America     | Bill Bryson             | 3.83        |
-| Heretics of Dune (Dune Chronicles #5)                 | Frank Herbert           | 3.83        |
-| Harry Potter Collection (Harry Potter, #1-6)          | J.K. Rowling            | 4.73        |
-| The Mother Tongue: English and How It Got That Way    | Bill Bryson             | 3.95        |
-| What to Expect the First Year                         | Heidi Murkoff et al.    | 3.86        |
+| Judul Buku                                                              | Penulis                          | Avg. Rating |
+|-------------------------------------------------------------------------|----------------------------------|-------------|
+| Harry Potter and the Order of the Phoenix (Harry Potter, #5)            | J.K. Rowling, Mary GrandPré      | 4.46        |
+| The Hitchhiker's Guide to the Galaxy (Hitchhiker's Guide to the Galaxy, #1) | Douglas Adams                    | 4.2         |
+| The Lord of the Rings (The Lord of the Rings, #1-3)                     | J.R.R. Tolkien                   | 4.47        |
+| The Ultimate Hitchhiker's Guide to the Galaxy                           | Douglas Adams                    | 4.37        |
+| A Short History of Nearly Everything                                    | Bill Bryson                      | 4.19        |
+| Heidi                                                                   | Johanna Spyri, Angelo Rinaldi, Beverly Cleary | 3.97        |
+| Notes from a Small Island                                               | Bill Bryson                      | 3.91        |
+| Neither Here nor There: Travels in Europe                               | Bill Bryson                      | 3.88        |
+| Heretics of Dune (Dune Chronicles #5)                                   | Frank Herbert                    | 3.83        |
+| Harry Potter Collection (Harry Potter, #1-6)                            | J.K. Rowling                     | 4.73        |
 
 #### b. Matrix Factorization (SVD)
 
-Top-10 rekomendasi untuk user ID 33716:
+Top-10 rekomendasi untuk user ID 314:
 
-| Judul Buku                                             | Penulis                | Avg. Rating |
-|--------------------------------------------------------|-------------------------|-------------|
-| Heidi                                                 | Johanna Spyri et al.    | 3.97        |
-| J.R.R. Tolkien 4-Book Boxed Set                        | J.R.R. Tolkien          | 4.59        |
-| Notes from a Small Island                             | Bill Bryson             | 3.91        |
-| The Long Dark Tea-Time of the Soul                    | Douglas Adams           | 4.05        |
-| Tropic of Cancer                                      | Henry Miller            | 3.71        |
-| Neither Here nor There                                | Bill Bryson             | 3.88        |
-| Harry Potter Collection (Harry Potter, #1-6)          | J.K. Rowling            | 4.73        |
-| The Design of Everyday Things                         | Donald A. Norman        | 4.18        |
-| The Broken Wings                                      | Kahlil Gibran et al.    | 3.93        |
-| What to Expect the First Year                         | Heidi Murkoff et al.    | 3.86        |
+| Judul Buku                                                              | Penulis                          | Avg. Rating |
+|-------------------------------------------------------------------------|----------------------------------|-------------|
+| The Fellowship of the Ring (The Lord of the Rings, #1)                  | J.R.R. Tolkien                   | 4.34        |
+| The Hitchhiker's Guide to the Galaxy (Hitchhiker's Guide to the Galaxy, #1) | Douglas Adams                    | 4.2         |
+| The Lord of the Rings (The Lord of the Rings, #1-3)                     | J.R.R. Tolkien                   | 4.47        |
+| The Ultimate Hitchhiker's Guide to the Galaxy                           | Douglas Adams                    | 4.37        |
+| The Power of One (The Power of One, #1)                                 | Bryce Courtenay                  | 4.34        |
+| I'm a Stranger Here Myself: Notes on Returning to America after Twenty Years Away | Bill Bryson                      | 3.89        |
+| Tropic of Cancer                                                        | Henry Miller                     | 3.71        |
+| The Lover                                                               | Marguerite Duras, Barbara Bray, Maxine Hong Kingston | 3.76        |
+| Job: A Comedy of Justice                                                | Robert A. Heinlein               | 3.77        |
+| Another Bullshit Night in Suck City                                     | Nick Flynn                       | 3.77        |
 
 #### c. Autoencoder
 
-Top-10 rekomendasi untuk user ID 33716:
+Top-10 rekomendasi untuk user ID 314:
 
-| Judul Buku                                             | Penulis                | Avg. Rating |
-|--------------------------------------------------------|-------------------------|-------------|
-| Harry Potter and the Goblet of Fire (Harry Potter #4) | J.K. Rowling            | 4.53        |
-| Heidi                                                 | Johanna Spyri et al.    | 3.97        |
-| J.R.R. Tolkien 4-Book Boxed Set                        | J.R.R. Tolkien          | 4.59        |
-| Notes from a Small Island                             | Bill Bryson             | 3.91        |
-| The Portrait of a Lady                                 | Henry James et al.      | 3.76        |
-| Heretics of Dune (Dune Chronicles #5)                 | Frank Herbert           | 3.83        |
-| Harry Potter Collection (Harry Potter, #1-6)          | J.K. Rowling            | 4.73        |
-| The Mother Tongue: English and How It Got That Way    | Bill Bryson             | 3.95        |
-| The Broken Wings                                      | Kahlil Gibran et al.    | 3.93        |
-| What to Expect the First Year                         | Heidi Murkoff et al.    | 3.86        |
+| Judul Buku                                                              | Penulis                          | Avg. Rating |
+|-------------------------------------------------------------------------|----------------------------------|-------------|
+| The Fellowship of the Ring (The Lord of the Rings, #1)                  | J.R.R. Tolkien                   | 4.34        |
+| Harry Potter and the Order of the Phoenix (Harry Potter, #5)            | J.K. Rowling, Mary GrandPré      | 4.46        |
+| The Hitchhiker's Guide to the Galaxy (Hitchhiker's Guide to the Galaxy, #1) | Douglas Adams                    | 4.2         |
+| The Lord of the Rings (The Lord of the Rings, #1-3)                     | J.R.R. Tolkien                   | 4.47        |
+| Children of Dune (Dune Chronicles #3)                                   | Frank Herbert                    | 3.9         |
+| The Lost Continent: Travels in Small Town America                       | Bill Bryson                      | 3.83        |
+| Heretics of Dune (Dune Chronicles #5)                                   | Frank Herbert                    | 3.83        |
+| The Known World                                                         | Edward P. Jones                  | 3.82        |
+| Daniel Deronda                                                          | George Eliot, Edmund White       | 3.82        |
+| Tropic of Capricorn                                                     | Henry Miller                     | 3.85        |
 
 ---
 
@@ -410,7 +441,6 @@ Top-10 rekomendasi untuk user ID 33716:
 | **TF-IDF Vectorizer**     | Lebih memperhatikan kata unik; cocok untuk teks panjang                   | Bisa mengabaikan informasi penting dari kata umum (sering muncul)          |
 | **CountVectorizer**       | Simpel dan cepat, cocok untuk dataset kecil atau kata-kata pendek         | Tidak membedakan kata penting dengan kata umum                            |
 
-
 #### Collaborative Filtering
 
 | Teknik                         | Kelebihan                                                                 | Kekurangan                                                                 |
@@ -418,7 +448,6 @@ Top-10 rekomendasi untuk user ID 33716:
 | **Cosine Similarity (User-Based)** | Mudah diimplementasikan, dapat menangkap hubungan antar pengguna         | Kurang efektif untuk dataset besar; tidak dapat menangani sparsity tinggi |
 | **Matrix Factorization (SVD)** | Dapat menemukan pola laten; cocok untuk menangani data sparsity          | Butuh tuning dan tidak bisa menangani user/item baru (cold-start)         |
 | **Autoencoder**                | Dapat menangkap pola non-linear yang kompleks                             | Butuh banyak data dan waktu training; lebih sulit dijelaskan              |
-
 
 ## Evaluation
 
@@ -513,9 +542,9 @@ Evaluasi dilakukan berdasarkan akurasi prediksi rating pada data testing menggun
 
 | Model Collaborative     | RMSE Testing |
 |-------------------------|----------------|
-| Cosine Similarity       | **1.3117**      |
-| Matrix Factorization (SVD) | **0.5286**   |
-| Autoencoder             | **0.2535**      |
+| Cosine Similarity       | **1.3093**      |
+| Matrix Factorization (SVD) | **0.5303**   |
+| Autoencoder             | **0.2564**      |
 
 *Kesimpulan: Autoencoder memberikan prediksi rating paling akurat (RMSE terkecil), diikuti oleh SVD. Cosine Similarity menghasilkan error terbesar.*
 
@@ -537,28 +566,26 @@ Berdasarkan seluruh proses eksplorasi, pemodelan, dan evaluasi sistem rekomendas
 ### 1. Apakah sistem menjawab setiap problem statement?
 
 ✅ Ya.  
-Sistem rekomendasi yang dibangun berhasil menjawab pertanyaan utama:  
+Sistem rekomendasi yang dibangun telah menjawab kedua problem statement utama:
 
-- **Bagaimana merekomendasikan buku berdasarkan preferensi pengguna?**  
-  → Terjawab melalui pendekatan collaborative filtering (user-based, SVD, autoencoder) yang memanfaatkan riwayat interaksi pengguna.  
-- **Algoritma mana yang memberikan hasil paling akurat dan relevan?**  
-  → Terjawab melalui evaluasi metrik: Autoencoder memiliki RMSE terendah untuk prediksi rating, dan CountVectorizer memiliki F1-score tertinggi untuk relevansi konten.
+- **Bagaimana sistem dapat merekomendasikan buku yang sesuai dengan minat pengguna berdasarkan histori interaksi sebelumnya (rating, bacaan)?**  
+  → Terjawab melalui penerapan collaborative filtering (user-based, SVD, autoencoder) yang memanfaatkan pola interaksi pengguna untuk menghasilkan rekomendasi personal.
+
+- **Pendekatan atau algoritma mana yang memberikan hasil rekomendasi paling akurat dan relevan terhadap kebutuhan pengguna, berdasarkan data Goodbooks-10k?**  
+  → Terjawab melalui evaluasi komparatif: Autoencoder menghasilkan RMSE terendah untuk prediksi rating (collaborative filtering), sedangkan CountVectorizer memberikan F1-score tertinggi untuk relevansi konten (content-based filtering).
 
 ---
 
 ### 2. Apakah model berhasil mencapai goals yang diharapkan?
 
 ✅ Ya.  
-Model telah mencapai semua tujuan utama proyek:
+Model telah memenuhi seluruh goals proyek:
 
-- **Mampu memberikan rekomendasi personal yang relevan.**  
-  → Ditunjukkan melalui Top-N output dari semua model (baik content-based maupun collaborative).
+- **Mengembangkan sistem rekomendasi buku yang bersifat personal dengan memanfaatkan histori interaksi pengguna untuk menghasilkan rekomendasi yang sesuai dengan minat pengguna.**  
+  → Terbukti dari output Top-N rekomendasi yang relevan dan personal pada kedua pendekatan (content-based dan collaborative).
 
-- **Output rekomendasi bersifat langsung dan dapat digunakan.**  
-  → Disajikan melalui output sebagai daftar buku lengkap dengan judul, penulis, dan rating (untuk collaborative filtering).
-
-- **Evaluasi performa dilakukan secara objektif.**  
-  → Menggunakan metrik yang sesuai untuk tiap pendekatan: RMSE untuk rating, dan Precision/Recall/F1 untuk Top-N relevansi.
+- **Mengevaluasi dan membandingkan beberapa pendekatan atau algoritma sistem rekomendasi untuk menentukan metode yang paling akurat dan relevan berdasarkan data Goodbooks-10k.**  
+  → Dilakukan evaluasi objektif menggunakan metrik yang sesuai: RMSE untuk collaborative filtering, serta Precision, Recall, dan F1-Score untuk content-based filtering.
 
 ---
 
